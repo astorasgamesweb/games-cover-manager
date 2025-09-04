@@ -4,7 +4,7 @@ import { useDarkMode } from './hooks/useDarkMode';
 import CSVUploader from './components/CSVUploader';
 import { ProgressLogger } from './components/ProgressLogger';
 import { GameProcessor } from './components/GameProcessor';
-import { DarkModeToggle } from './components/DarkModeToggle';
+import DarkModeToggle from './components/DarkModeToggle';
 
 interface Game {
   name: string;
