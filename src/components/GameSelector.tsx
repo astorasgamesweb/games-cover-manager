@@ -142,7 +142,7 @@ export default function GameSelector({
   };
 
   const handleCoverSelect = (cover: SteamGridDBCover) => {
-    onSelect(cover, selectedGameData);
+    onSelect(cover, { ...selectedGameData, provider: currentProvider });
   };
 
   return (
@@ -153,18 +153,42 @@ export default function GameSelector({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Select Cover for: {game.name} ({provider === 'steamgriddb' ? 'SteamGridDB' : 'IGDB'})
+                Seleccionar Portada para: {game.name}
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                No exact match found on {provider === 'steamgriddb' ? 'SteamGridDB' : 'IGDB'}. Please select from similar games or enter manually.
+                No se encontró coincidencia exacta. Selecciona de juegos similares o ingresa manualmente.
               </p>
             </div>
+            <div className="flex items-center space-x-2">
+              <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                <button
+                  onClick={() => setCurrentProvider('steamgriddb')}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    provider === 'steamgriddb'
+                      ? 'bg-blue-500 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  }`}
+                >
+                  SteamGridDB
+                </button>
+                <button
+                  onClick={() => setCurrentProvider('igdb')}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    provider === 'igdb'
+                      ? 'bg-purple-500 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  }`}
+                >
+                  IGDB
+                </button>
+              </div>
             <button
               onClick={onSkip}
               className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <X className="w-6 h-6" />
             </button>
+            </div>
           </div>
         </div>
 

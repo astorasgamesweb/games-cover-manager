@@ -261,10 +261,32 @@ export default function GameProcessor({
   const exportCSV = () => {
     if (processedGames.length === 0) return;
 
+    // Crear un mapa para evitar duplicados basado en el nombre del juego
+    const gameMap = new Map();
+    
+    // Primero agregar todos los juegos procesados
+    processedGames.forEach(game => {
+      if (!gameMap.has(game.name)) {
+        gameMap.set(game.name, game);
+      }
+    });
+    
+    // Luego agregar juegos no procesados que no estén en el mapa
+    games.forEach(game => {
+      if (!gameMap.has(game.name)) {
+        gameMap.set(game.name, {
+          ...game,
+          status: 'pending'
+        });
+      }
+    });
+    
+    const allGames = Array.from(gameMap.values());
+
     const headers = ['Nombre', 'Nuevo Nombre', 'Portada', 'Año', 'Descripción'];
     const csvContent = [
       headers.join(','),
-      ...processedGames.map(game => [
+      ...allGames.map(game => [
         `"${game.name || ''}"`,
         `"${game['nuevo nombre'] || ''}"`,
         `"${game.portada || ''}"`,
@@ -277,13 +299,13 @@ export default function GameProcessor({
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', 'games_processed.csv');
+    link.setAttribute('download', `games_processed_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    onLog(`📥 CSV exportado con ${processedGames.length} juegos`);
+    onLog(`📥 CSV exportado con ${allGames.length} juegos (${processedGames.length} procesados)`);
   };
 
   // Efecto para procesar automáticamente
