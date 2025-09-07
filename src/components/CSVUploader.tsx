@@ -122,7 +122,7 @@ export default function CSVUploader({ onUpload }: CSVUploaderProps) {
     };
     
     reader.readAsText(file);
-  }, [parseCSV, onLoad]);
+  }, [parseCSV, onUpload]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
