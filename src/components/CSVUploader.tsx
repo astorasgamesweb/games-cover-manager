@@ -3,10 +3,10 @@ import { Upload, FileText, AlertTriangle } from 'lucide-react';
 import { Game } from '../types';
 
 interface CSVUploaderProps {
-  onLoad: (games: Game[]) => void;
+  onUpload: (games: Game[]) => void;
 }
 
-export default function CSVUploader({ onLoad }: CSVUploaderProps) {
+export default function CSVUploader({ onUpload }: CSVUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,7 +115,7 @@ export default function CSVUploader({ onLoad }: CSVUploaderProps) {
         const content = e.target?.result as string;
         const games = parseCSV(content);
         setError(null);
-        onLoad(games);
+        onUpload(games);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error parsing CSV file');
       }
