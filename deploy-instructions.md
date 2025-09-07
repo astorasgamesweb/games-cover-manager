@@ -2,11 +2,7 @@
 
 ## El error 404 indica que las Edge Functions no están desplegadas en Supabase.
 
-### Opción 1: Usar el botón "Connect to Supabase" en Bolt
-1. Haz clic en "Connect to Supabase" en la esquina superior derecha
-2. Las funciones se desplegarán automáticamente
-
-### Opción 2: Despliegue manual con Supabase CLI
+### Despliegue manual con Supabase CLI
 
 #### 1. Instalar Supabase CLI
 ```bash
@@ -51,6 +47,4 @@ supabase functions deploy get-igdb-covers
 
 **Nota**: Las credenciales de IGDB (Client ID: a78bukj82ys6jskweubwi6ihy06uml) ya están integradas en el código y el access token se genera automáticamente.
 
--H 'Content-Type: application/x-www-form-urlencoded' \
--d 'client_id=TU_CLIENT_ID&client_secret=TU_CLIENT_SECRET&grant_type=client_credentials'
 Una vez desplegadas las funciones, la aplicación debería funcionar correctamente.

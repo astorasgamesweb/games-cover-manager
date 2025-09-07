@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { X, ExternalLink, Search, Check } from 'lucide-react';
-import { Game, SteamGridDBGame, SteamGridDBCover } from '../types';
+import { Game, SteamGridDBGame, SteamGridDBCover, IGDBGame } from '../types';
 
 interface GameSelectorProps {
   game: Game;
-  suggestions: SteamGridDBGame[];
+  suggestions: SteamGridDBGame[] | IGDBGame[];
   onSelect: (cover: SteamGridDBCover, gameData?: any) => void;
   onSkip: () => void;
   onManualInput: (imageUrl: string) => void;
@@ -19,7 +19,7 @@ export default function GameSelector({
   onManualInput,
   provider
 }: GameSelectorProps) {
-  const [selectedGame, setSelectedGame] = useState<SteamGridDBGame | null>(null);
+  const [selectedGame, setSelectedGame] = useState<SteamGridDBGame | IGDBGame | null>(null);
   const [covers, setCovers] = useState<SteamGridDBCover[]>([]);
   const [loadingCovers, setLoadingCovers] = useState(false);
   const [manualUrl, setManualUrl] = useState('');
@@ -110,7 +110,7 @@ export default function GameSelector({
     }
   };
 
-  const handleGameSelect = (selectedGame: SteamGridDBGame) => {
+  const handleGameSelect = (selectedGame: SteamGridDBGame | IGDBGame) => {
     setSelectedGame(selectedGame);
     loadCovers(selectedGame);
   };
@@ -142,7 +142,7 @@ export default function GameSelector({
   };
 
   const handleCoverSelect = (cover: SteamGridDBCover) => {
-    onSelect(cover, { ...selectedGameData, provider: currentProvider });
+    onSelect(cover, { ...selectedGameData, provider });
   };
 
   return (
@@ -161,26 +161,15 @@ export default function GameSelector({
             </div>
             <div className="flex items-center space-x-2">
               <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                <button
-                  onClick={() => setCurrentProvider('steamgriddb')}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-md ${
                     provider === 'steamgriddb'
                       ? 'bg-blue-500 text-white'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                      : 'bg-purple-500 text-white'
                   }`}
                 >
-                  SteamGridDB
-                </button>
-                <button
-                  onClick={() => setCurrentProvider('igdb')}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    provider === 'igdb'
-                      ? 'bg-purple-500 text-white'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                  }`}
-                >
-                  IGDB
-                </button>
+                  {provider === 'steamgriddb' ? 'SteamGridDB' : 'IGDB'}
+                </span>
               </div>
             <button
               onClick={onSkip}
@@ -211,9 +200,9 @@ export default function GameSelector({
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      {suggestion.logo && (
+                      {provider === 'steamgriddb' && (suggestion as SteamGridDBGame).logo && (
                         <img
-                          src={suggestion.logo}
+                          src={(suggestion as SteamGridDBGame).logo}
                           alt={suggestion.name}
                           className="w-12 h-12 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
                         />
@@ -221,7 +210,7 @@ export default function GameSelector({
                       <div className="flex-1">
                         <p className="font-medium text-gray-900 dark:text-white">{suggestion.name}</p>
                         <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 mt-1">
-                          {provider === 'steamgriddb' && suggestion.verified && (
+                          {provider === 'steamgriddb' && (suggestion as SteamGridDBGame).verified && (
                             <div className="flex items-center space-x-2">
                               <span className="inline-flex items-center text-xs text-green-600 dark:text-green-400">
                                 <Check className="w-3 h-3 mr-1" />
@@ -231,10 +220,12 @@ export default function GameSelector({
                           )}
                           {provider === 'igdb' && (
                             <>
-                              {suggestion.year && <p>📅 {suggestion.year}</p>}
-                              {suggestion.description && (
+                              {(suggestion as IGDBGame).first_release_date !== undefined && (
+                                <p>📅 {new Date(((suggestion as IGDBGame).first_release_date ?? 0) * 1000).getFullYear()}</p>
+                              )}
+                              {((suggestion as IGDBGame).summary || (suggestion as IGDBGame).storyline) && (
                                 <p className="line-clamp-2">
-                                  📝 {suggestion.description.substring(0, 100)}...
+                                  📝 {((suggestion as IGDBGame).summary || (suggestion as IGDBGame).storyline || '').substring(0, 100)}...
                                 </p>
                               )}
                             </>
