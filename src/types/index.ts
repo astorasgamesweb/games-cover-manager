@@ -48,4 +48,9 @@ export interface SearchResult {
   igdbSuggestions?: IGDBGame[];
   source?: 'steamgriddb' | 'igdb';
   error?: string;
+  gameData?: {
+    name?: string;
+    year?: string;
+    description?: string;
+  };
 }

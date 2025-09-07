@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Play, Pause, Square, Download } from 'lucide-react';
-import { Game, SearchResult, SteamGridDBCover, SteamGridDBGame } from '../types';
+import { Game, SearchResult, SteamGridDBCover, SteamGridDBGame, IGDBGame } from '../types';
 import GameSelector from './GameSelector';
 
 interface GameProcessorProps {
@@ -24,7 +24,7 @@ export default function GameProcessor({
   const [showSelector, setShowSelector] = useState(false);
   const [currentGame, setCurrentGame] = useState<Game | null>(null);
   const [suggestions, setSuggestions] = useState<SteamGridDBGame[]>([]);
-  const [igdbSuggestions, setIgdbSuggestions] = useState<SteamGridDBGame[]>([]);
+  const [igdbSuggestions, setIgdbSuggestions] = useState<IGDBGame[]>([]);
   const [currentProvider, setCurrentProvider] = useState<'steamgriddb' | 'igdb'>('steamgriddb');
 
   const cleanGameName = (name: string): string => {
@@ -83,14 +83,18 @@ export default function GameProcessor({
     if (isPaused || currentIndex >= games.length) {
       if (currentIndex >= games.length) {
         setIsProcessing(false);
-        onProcessComplete(processedGames);
-        onLog(`✅ Procesamiento completado: ${processedGames.length}/${games.length} juegos procesados`);
+        // Deduplicate processedGames by game name before completing
+        const uniqueProcessedGames = processedGames.filter((game, index, self) =>
+          index === self.findIndex(g => g.name === game.name)
+        );
+        onProcessComplete(uniqueProcessedGames);
+        onLog(`✅ Procesamiento completado: ${uniqueProcessedGames.length}/${games.length} juegos procesados`);
       }
       return;
     }
 
     const game = games[currentIndex];
-    
+
     // Verificar si el juego ya fue procesado exitosamente
     const alreadyProcessed = processedGames.find(pg => pg.name === game.name);
     if (alreadyProcessed) {
@@ -100,10 +104,10 @@ export default function GameProcessor({
     }
 
     setCurrentGame(game);
-    
+
     try {
       const result = await searchGame(game);
-      
+
       if (result.success && result.covers && result.covers.length > 0) {
         // Encontrado automáticamente
         const bestCover = result.covers[0];
@@ -127,7 +131,14 @@ export default function GameProcessor({
           }
         }
 
-        setProcessedGames(prev => [...prev, updatedGame]);
+        // Add to processedGames only if not already present
+        setProcessedGames(prev => {
+          const exists = prev.find(g => g.name === updatedGame.name);
+          if (!exists) {
+            return [...prev, updatedGame];
+          }
+          return prev;
+        });
         onLog(`✓ ${game.name} - Encontrado automáticamente (${result.source || 'unknown'})`);
         setCurrentIndex(prev => prev + 1);
       } else if (result.suggestions || result.igdbSuggestions) {
@@ -144,7 +155,14 @@ export default function GameProcessor({
           ...game,
           status: 'no-results' as const
         };
-        setProcessedGames(prev => [...prev, failedGame]);
+        // Add to processedGames only if not already present
+        setProcessedGames(prev => {
+          const exists = prev.find(g => g.name === failedGame.name);
+          if (!exists) {
+            return [...prev, failedGame];
+          }
+          return prev;
+        });
         onLog(`✗ ${game.name} - No encontrado en ninguna fuente`);
         setCurrentIndex(prev => prev + 1);
       }
@@ -154,7 +172,14 @@ export default function GameProcessor({
         ...game,
         status: 'error' as const
       };
-      setProcessedGames(prev => [...prev, errorGame]);
+      // Add to processedGames only if not already present
+      setProcessedGames(prev => {
+        const exists = prev.find(g => g.name === errorGame.name);
+        if (!exists) {
+          return [...prev, errorGame];
+        }
+        return prev;
+      });
       onLog(`✗ ${game.name} - Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setCurrentIndex(prev => prev + 1);
     }
